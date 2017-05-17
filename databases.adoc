@@ -1,9 +1,16 @@
 ## Lab: Adding a Database
 
 ### Application Description
-In this lab, we're going to deploy a Mongo database that will be used to store the data for the `nationalparks` application. We will also connect the `nationalparks` service with the newly deployed Mongo database, so that the `nationalparks` service can load and query the database for the corresponding information.
+In this lab, we're going to deploy a Mongo database that will be used to store
+the data for the `nationalparks` application. We will also connect the
+`nationalparks` service with the newly deployed Mongo database, so that the
+`nationalparks` service can load and query the database for the corresponding
+information.
 
-Finally, we will mark the `nationalparks` application as a backend for the map visualization tool, so that it can be dynamically discovered by the `parksmap` component using the OpenShift discovery mechanism and the map will be displayed automatically.
+Finally, we will mark the `nationalparks` application as a backend for the map
+visualization tool, so that it can be dynamically discovered by the `parksmap`
+component using the OpenShift discovery mechanism and the map will be displayed
+automatically.
 
 image::roadshow-app-architecture-nationalparks-2.png[Application architecture,800,align="center"]
 
@@ -44,11 +51,16 @@ persistent storage!). The image will ensure that:
 - A user exists with the specified name
 - The user can access the specified database with the specified password
 
-In the web console in your `{{EXPLORE_PROJECT_NAME}}{{USER_SUFFIX}}` project, again click the *"Add to
-Project"* button, and then find the `mongodb-ephemeral` template, and click it.
-You will notice that there are several MongoDB templates available, some of
-which come with application servers pre-configured. We just need a database,
-though, so `mongodb-ephemeral` is what you should choose.
+In the web console in your `{{EXPLORE_PROJECT_NAME}}{{USER_SUFFIX}}` project,
+again click the *"Add to Project"* button. Click the *Data Stores* category.
+
+image::mongodb-datastores.png[Data Stores]
+
+Type `mongodb` in the search box, and then scroll down to find the *MongoDB
+(Ephemeral)* template, and click it.  You will notice that there are several
+MongoDB templates available, some of which come with application servers
+pre-configured.  We just need a database, though, so the ephemeral Mongo
+template is what you should choose.
 
 image::ocp-mongodb-template.png[MongoDB]
 
@@ -247,7 +259,7 @@ here:
 {% if PARKSMAP_PY %}
 http://{{GITLAB_URL_PREFIX}}.{{ROUTER_ADDRESS}}/{{GITLAB_USER}}/nationalparks-py/blob/{{NATIONALPARKS_VERSION}}/wsgi.py#L11-18
 {% else %}
-http://{{GITLAB_URL_PREFIX}}.{{ROUTER_ADDRESS}}/{{GITLAB_USER}}/nationalparks/blob/{{NATIONALPARKS_VERSION}}/src/main/java/org/openshift/parks/mongo/DBConnection.java#L44-l48
+http://{{GITLAB_URL_PREFIX}}.{{ROUTER_ADDRESS}}/{{GITLAB_USER}}/nationalparks/blob/{{NATIONALPARKS_VERSION}}/src/main/java/com/openshift/evg/roadshow/parks/db/MongoDBConnection.java#L44-l48
 {% endif %}
 ----
 
@@ -271,13 +283,14 @@ arbitrary key=value pair. It could be anything.
 * `openshift=awesome`
 
 In the case of the parks map, the application is actually querying the OpenShift
-API and asking about the *Routes* in the project. If any of them have a
+API and asking about the *Routes* and *Services* in the project. If any of them have a
 *Label* that is `type=parksmap-backend`, the application knows to interrogate
-that service's endpoints to look for map data.
+the endpoints to look for map data.
 {% if PARKSMAP_PY %}
-You can see the code that does this link:https://github.com/openshift-roadshow/parksmap-web-py/blob/1.0.0/app.py#L85[here].
+You can see the code that does this link:https://github.com/openshift-roadshow/parksmap-web-py/blob/1.0.0/app.py#L97[here].
 {% else %}
-You can see the code that does this link:https://github.com/openshift-roadshow/parksmap-web/blob/1.0.0/src/main/java/com/openshift/evg/roadshow/rest/ServiceWatcher.java#L20[here].
+You can see the code that does this
+link:https://github.com/openshift-roadshow/parksmap-web/blob/{{PARKSMAP_VERSION}}/src/main/java/com/openshift/evg/roadshow/rest/RouteWatcher.java#L20[here].
 {% endif %}
 
 
@@ -309,6 +322,12 @@ You see that it only has one label: `app=nationalparks`. Now, use `oc label`:
 [source]
 ----
 oc label route nationalparks type=parksmap-backend
+----
+
+You will see something like:
+
+[source]
+----
 route "nationalparks" labeled
 ----
 
